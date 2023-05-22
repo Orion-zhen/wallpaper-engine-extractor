@@ -37,6 +37,22 @@ python main.py
 
 然后等待爬取和提取完成即可。
 
+[更新] 可选的参数有：
+
+```powershell
+python main.py  --target=workshopID
+                --target-file=workshopIDs.json
+                --retry=times
+```
+
+其中，`--target`参数为你指定的想要爬取的壁纸的创意工坊ID，`--target-file`参数为你想要爬取的壁纸的创意工坊ID列表，json文件格式为：
+
+```json
+["ID1", "ID2", "ID3", ...]
+```
+
+`--retry`参数指定你想重试的次数，如果传入这个参数，脚本会默认从 `./accessories/failed.json`中读取上次爬取失败的文件，并重试你指定的次数。
+
 你还可以通过更改 `./modules/creeper.py`中 `repkgPath`的值来指定你想要的pkg文件提取器，但请将提取器放在和 `main.py`一个文件夹下，或者改为绝对地址。
 
 你还可以通过更改 `./modules/creeper.py`中 `batch`的值来改变每爬取多少个文件后暂停10秒。

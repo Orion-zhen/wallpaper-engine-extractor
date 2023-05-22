@@ -1,5 +1,6 @@
 import os
 import json
+import argparse
 from modules.creeper import creeper
 
 # change path to your steam workshop path
@@ -12,6 +13,39 @@ outputBase = "F:/图片/wallpaper_engine提取"
 
 recorder = []
 failed = []
+
+# parse arguments in command line
+parser = argparse.ArgumentParser()
+parser.add_argument("--target", type=str, default=None)
+parser.add_argument("--target-file", type=str, default=None)
+parser.add_argument("--retry", type=int, default=0)
+args = parser.parse_args()
+
+if args.target != None and args.target_file != None:
+    print("参数错误，请不要同时传递target和target-file")
+    exit()
+
+elif args.target != None:
+    fileFolders = [args.target]
+    recorder, failed = creeper(path, fileFolders, outputBase, recorder)
+    exit()
+
+elif args.target_file != None:
+    with open(args.target_file, "r") as f:
+        fileFolders = json.load(f)
+    recorder, failed = creeper(path, fileFolders, outputBase, recorder)
+    exit()
+    
+elif args.retry > 0:
+    with open("./accessories/failed.json", "r") as f:
+        failed = json.load(f)
+    if len(failed) != 0:
+        for i in range(args.retry):
+            print("第" + str(i) + "次重试")
+            recorder, failed = creeper(path, failed, outputBase, recorder)
+    else:
+        print("没有失败的文件夹")
+    exit()
 
 # check if history.json exists
 # if not, create one
