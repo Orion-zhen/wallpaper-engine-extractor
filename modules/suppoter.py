@@ -4,9 +4,6 @@ import shutil
 def processor(path, outputBase, baseCommand, autherName, title, file):
     if autherName == "None":
         autherName = "UnknownAuther"
-        
-    locals = os.listdir(path + "/" + file)
-    outputPath = outputBase + "/" + autherName + "/" + title + " [id=" + file + "]"
     
     # check for illegal characters
     autherName = autherName.replace('<', '(')
@@ -27,6 +24,9 @@ def processor(path, outputBase, baseCommand, autherName, title, file):
     title = title.replace('/', '_')
     title = title.replace('"', "'")
     title = title.replace('*', '×')
+    
+    locals = os.listdir(path + "/" + file)
+    outputPath = outputBase + "/" + autherName + "/" + title + " [id=" + file + "]"
     
     if not os.path.exists(outputPath):
         try:
