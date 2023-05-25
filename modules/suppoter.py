@@ -53,7 +53,7 @@ def processor(path, outputBase, baseCommand, autherName, title, file):
                 shutil.rmtree(outputPath + "/" + subfolder)
         subfiles = os.listdir(outputPath + "/materials")
         for subfile in subfiles:
-            if subfile.endwith(".png") or subfile.endwith(".gif") or subfile.endwith(".jpg") or subfile.endwith(".jpeg"):
+            if subfile.endswith(".png") or subfile.endswith(".gif") or subfile.endswith(".jpg") or subfile.endswith(".jpeg"):
                 shutil.move(outputPath + "/materials/" + subfile, outputPath)
         shutil.rmtree(outputPath + "/materials")
         
