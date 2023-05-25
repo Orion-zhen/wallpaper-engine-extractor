@@ -71,3 +71,4 @@ def fail(file, failed):
     print(str(file) + "爬取失败")
     failed.append(file)
     print("-----------------------------------")
+    return failed

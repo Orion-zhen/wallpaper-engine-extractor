@@ -39,7 +39,7 @@ def creeper(path, fileFolders, outputBase, recorder):
             response.encoding = response.apparent_encoding
             html = BeautifulSoup(response.text, "html.parser")
         except:
-            fail(file, failed)
+            failed = fail(file, failed)
             i += 1
             continue
         
@@ -48,7 +48,7 @@ def creeper(path, fileFolders, outputBase, recorder):
             content = html.select("#mainContents > div.workshopItemDetailsHeader > div.workshopItemTitle")
             title = content[0].text
         except:
-            fail(file, failed)
+            failed = fail(file, failed)
             i += 1
             continue
         
@@ -57,7 +57,7 @@ def creeper(path, fileFolders, outputBase, recorder):
             autherLink = html.select("#rightContents > div > div:nth-child(1) > div.rightDetailsBlock > div > div > a")
             autherURL = autherLink[0]["href"]
         except:
-            fail(file, failed)
+            failed = fail(file, failed)
             i += 1
         
         try:
@@ -65,7 +65,7 @@ def creeper(path, fileFolders, outputBase, recorder):
             findAuther.encoding = findAuther.apparent_encoding
             autherHTML = BeautifulSoup(findAuther.text, "html.parser")
         except:
-            fail(file, failed)
+            failed = fail(file, failed)
             i += 1
             continue
         
@@ -81,7 +81,7 @@ def creeper(path, fileFolders, outputBase, recorder):
             # record processed files   
             recorder.append(file)
         else:
-            fail(file, failed)
+            failed = fail(file, failed)
 
         i += 1
         
