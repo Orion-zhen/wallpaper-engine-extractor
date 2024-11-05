@@ -68,7 +68,12 @@ def format_path(content: str) -> str:
 
 
 def extract(
-    origin_path: str, target_id: str, output_base: str, title: str, author_name: str
+    origin_path: str,
+    target_id: str,
+    output_base: str,
+    title: str,
+    author_name: str,
+    execute_path: str = "RePKG.exe",
 ) -> bool:
     print("-----------------------------------")
     source_folder = os.path.join(origin_path, target_id)
@@ -85,7 +90,7 @@ def extract(
 
     # extract from source folder
     # if scene.pkg exists, extract it
-    execute_path = "RePKG.exe"
+
     execute_cmd = [
         execute_path,
         "extract",
@@ -145,18 +150,19 @@ def siginit_handler(signum, frame):
     print("警告: metadata未写入, 下次运行时将会从头开始提取")
     sys.exit(1)
 
+
 def process_single(
-    origin_path: str, target_id: str, output_base: str
+    origin_path: str, target_id: str, output_base: str, execute_path: str = "RePKG.exe"
 ) -> Union[Dict[str, str], None]:
     signal.signal(signal.SIGINT, siginit_handler)
-    
+
     title, author_name = get_content_info(target_id)
     if title is None or author_name is None:
         return None
     title = format_path(title)
     author_name = format_path(author_name)
 
-    if extract(origin_path, target_id, output_base, title, author_name):
+    if extract(origin_path, target_id, output_base, title, author_name, execute_path):
         metadatum = {
             "ID": target_id,
             "title": title,
@@ -175,11 +181,14 @@ def process(
     target_ids: List[str],
     output_base: str,
     parallel_num: int,
+    execute_path: str = "RePKG.exe",
 ) -> Tuple[List[Dict[str, str]], List[str]]:
-    args = [(origin_path, target_id, output_base) for target_id in target_ids]
+    args = [
+        (origin_path, target_id, output_base, execute_path) for target_id in target_ids
+    ]
 
     global pool
-    pool =  Pool(processes=parallel_num)
+    pool = Pool(processes=parallel_num)
     results = pool.starmap(process_single, args)
 
     metadata = [result for result in results if result is not None]
