@@ -67,7 +67,9 @@ if __name__ == "__main__":
     if len(failed) != 0:
         print("重试中...")
         for _ in range(args.retry):
-            retry_metadata, failed = process(origin_path, failed, output_base, args.parallel)
+            retry_metadata, failed = process(
+                origin_path, failed, output_base, args.parallel
+            )
 
             metadata += retry_metadata
 
