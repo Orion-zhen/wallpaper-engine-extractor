@@ -38,7 +38,8 @@ pip install -r requirements.txt
 命令格式如下:
 
 ```shell
-usage: main.py [-h] --input INPUT [--recover] --output OUTPUT [--parallel PARALLEL] [--retry RETRY]                                                                                                                                                                                                                                                                                                                                                                                                                                           
+usage: main.py [-h] --input INPUT [--recover] --output OUTPUT [--parallel PARALLEL] [--retry RETRY]
+                                                                                                          
 Wallpaper Engine 壁纸提取器
 
 options:
