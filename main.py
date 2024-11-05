@@ -1,79 +1,81 @@
 import os
 import json
 import argparse
-from modules.creeper import creeper
+from utils import process
 
-# change path to your steam workshop path
-path = "F:/图片/workshop_backup/431960"
-fileFolders = os.listdir(path)
 
-# change path to your output path
-outputBase = "F:/图片/wallpaper_engine提取"
-# output format: outputBase/autherName/title [id=workshopID]
-
-recorder = []
-failed = []
-
-# parse arguments in command line
-parser = argparse.ArgumentParser()
-parser.add_argument("--target", type=str, default=None)
-parser.add_argument("--target-file", type=str, default=None)
-parser.add_argument("--retry", type=int, default=0)
+parser = argparse.ArgumentParser(description="Wallpaper Engine 壁纸提取器")
+parser.add_argument(
+    "--input",
+    "-i",
+    type=str,
+    required=True,
+    help="Wallpaper Engine workshop的路径",
+)
+parser.add_argument(
+    "--recover", "-r", action="store_true", default=False, help="是否恢复上次失败的任务"
+)
+parser.add_argument(
+    "--output", "-o", type=str, required=True, help="提取到的壁纸的保存路径"
+)
+parser.add_argument(
+    "--parallel", "-p", type=int, default=os.cpu_count(), help="并行处理数量"
+)
+parser.add_argument("--retry", type=int, default=1, help="重试次数")
 args = parser.parse_args()
 
-if args.target != None and args.target_file != None:
-    print("参数错误，请不要同时传递target和target-file")
-    exit()
 
-elif args.target != None:
-    fileFolders = [args.target]
-    recorder, failed = creeper(path, fileFolders, outputBase, recorder)
-    exit()
+if __name__ == "__main__":
+    output_base = args.output
+    origin_path = args.input
 
-elif args.target_file != None:
-    with open(args.target_file, "r") as f:
-        fileFolders = json.load(f)
-    recorder, failed = creeper(path, fileFolders, outputBase, recorder)
-    exit()
-    
-elif args.retry > 0:
-    with open("./accessories/failed.json", "r") as f:
-        failed = json.load(f)
-    if len(failed) != 0:
-        for i in range(args.retry):
-            print("第" + str(i) + "次重试")
-            recorder, failed = creeper(path, failed, outputBase, recorder)
+    if args.recover:
+        if os.path.exists(os.path.join(output_base, "failed.json")):
+            with open(
+                os.path.join(output_base, "failed.json"), "r", encoding="utf-8"
+            ) as f:
+                target_ids = json.load(f)
+                assert isinstance(target_ids, list), "failed.json 格式错误"
+        else:
+            print("没有失败的任务记录, 请先运行一次正常的任务")
+            exit(0)
     else:
-        print("没有失败的文件夹")
-    exit()
+        target_ids = os.listdir(origin_path)
+        target_ids = [
+            item
+            for item in target_ids
+            if os.path.isdir(os.path.join(origin_path, item))
+        ]
 
-# check if history.json exists
-# if not, create one
-local = os.listdir("./accessories/")
-if "history.json" not in local:
-    authNames = os.listdir(outputBase)
-    for authName in authNames:
-        files = os.listdir(outputBase + "/" + authName)
-        for file in files:
-            recorder.append(file.split("=")[-1][:-1])
-    with open("./accessories/history.json", "w") as f:
-        json.dump(recorder, f)
+    failed = []
+    processed_list = []
+    origin_metadata = []
+    if os.path.exists(os.path.join(output_base, "metadata.json")):
+        with open(
+            os.path.join(output_base, "metadata.json"), "r", encoding="utf-8"
+        ) as f:
+            origin_metadata = json.load(f)
+            assert isinstance(origin_metadata, list), "metadata.json 格式错误"
+            processed_list.extend(item["ID"] for item in origin_metadata)
 
-with open("./accessories/history.json", "r") as f:
-    recorder = json.load(f)
+    target_ids = list(set(target_ids) - set(processed_list))
 
-# start crawling  
-recorder, failed = creeper(path, fileFolders, outputBase, recorder)
+    metadata, failed = process(origin_path, target_ids, output_base, args.parallel)
 
-if len(failed) != 0:
-    print("重试中...")
-    for i in range(4):
-        recorder, failed = creeper(path, failed, outputBase, recorder)
-        if len(failed) == 0:
-            break
+    metadata += origin_metadata
 
-with open("./accessories/history.json", "w") as f:
-    json.dump(recorder, f)
+    if len(failed) != 0:
+        print("重试中...")
+        for _ in range(args.retry):
+            retry_metadata, failed = process(origin_path, failed, output_base, args.parallel)
 
-with open("./accessories/failed.json", "w") as f:
-    json.dump(failed, f)
+            metadata += retry_metadata
+
+            if len(failed) == 0:
+                break
+    with open(os.path.join(output_base, "metadata.json"), "w", encoding="utf-8") as f:
+        json.dump(metadata, f, ensure_ascii=False, indent=4)
+
+    if len(failed) != 0:
+        with open(os.path.join(output_base, "failed.json"), "w", encoding="utf-8") as f:
+            json.dump(failed, f, ensure_ascii=False, indent=4)
