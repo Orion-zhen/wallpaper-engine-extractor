@@ -1,6 +1,2 @@
 bs4
-pyopenssl
-ndg-httpsclient
-pyasn1
-urllib3
-channels
+tk
